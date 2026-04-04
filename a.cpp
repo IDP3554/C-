@@ -43,4 +43,5 @@ int main() {
     } catch (exception& e) {
         cout << "Ошибка: " << e.what() << endl;
     }
+    return 0;
 }
