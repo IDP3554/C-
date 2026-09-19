@@ -1,43 +1,67 @@
 #include <iostream>
 #include <string>
+#include <stdexcept>
+
 using namespace std;
+
+bool isLatinLetter(char c) {
+    return (c >= 'a' && c <= 'z') ||
+           (c >= 'A' && c <= 'Z');
+}
+
+bool isValidFirstBotChar(char c) {
+    return isLatinLetter(c) || c == '_';
+}
+
+bool isValidBotChar(char c) {
+    return isLatinLetter(c) ||
+           (c >= '0' && c <= '9') ||
+           c == '_';
+}
 
 int main() {
     try {
-        string text;
-        cout << "Введите текст: " << endl;
-        getline(cin, text);
+        const int MAX_BOTS = 100;
 
-        string bots[100];
+        string text;
+        cout << "Введите текст: ";
+
+        if (!getline(cin, text)) {
+            throw runtime_error("Не удалось прочитать текст.");
+        }
+
+        string bots[MAX_BOTS];
         int botCount = 0;
 
         int i = 0;
-        while (i < (int)text.size()) {
+
+        while (i < static_cast<int>(text.size())) {
             if (text[i] == '@') {
                 int j = i + 1;
-                char first = (j < (int)text.size()) ? text[j] : ' ';
 
-                bool firstOk = (first >= 'a' && first <= 'z')
-                            || (first >= 'A' && first <= 'Z')
-                            || first == '_';
+                if (j < static_cast<int>(text.size()) &&
+                    isValidFirstBotChar(text[j])) {
 
-                if (firstOk) {
                     string bot = "@";
-                    while (j < (int)text.size()) {
-                        char c = text[j];
-                        bool valid = (c >= 'a' && c <= 'z')
-                                  || (c >= 'A' && c <= 'Z')
-                                  || (c >= '0' && c <= '9')
-                                  || c == '_';
-                        if (!valid) break;
-                        bot += c;   
+
+                    while (j < static_cast<int>(text.size()) &&
+                           isValidBotChar(text[j])) {
+                        bot += text[j];
                         j++;
                     }
-                    bots[botCount++] = bot;
+
+                    if (botCount < MAX_BOTS) {
+                        bots[botCount] = bot;
+                        botCount++;
+                    } else {
+                        throw runtime_error("Найдено слишком много адресов ботов.");
+                    }
+
                     i = j;
                     continue;
                 }
             }
+
             i++;
         }
 
@@ -45,13 +69,15 @@ int main() {
             cout << "Боты не найдены." << endl;
         } else {
             cout << "Найденные боты (" << botCount << "):" << endl;
-            for (int k = 0; k < botCount; k++) {
-                cout << "  " << bots[k] << endl;
+
+            for (int i = 0; i < botCount; i++) {
+                cout << bots[i] << endl;
             }
         }
-
-    } catch (exception& e) {
+    }
+    catch (const exception& e) {
         cout << "Ошибка: " << e.what() << endl;
     }
+
     return 0;
 }
